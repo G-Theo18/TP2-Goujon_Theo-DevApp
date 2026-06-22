@@ -28,8 +28,8 @@ const AppBarButton = forwardRef<ComponentRef<typeof Pressable>, Props>(function 
   const pressed = useSharedValue<boolean>(false);
 
   const viewStyle: ViewStyle = {
-    paddingVertical: size === 'md' ? 8 : 12,
-    paddingHorizontal: size === 'md' ? 8 : 24,
+    paddingVertical: size === 'md' ? 12 : 18,
+    paddingHorizontal: size === 'md' ? 12 : 36,
   };
 
   const animatedStyles = useAnimatedStyle(() => ({
@@ -65,7 +65,7 @@ export { AppBarButton };
 
 const makeStyles = (colorScheme: ColorSchemeName) => StyleSheet.create({
   button: {
-    backgroundColor: colorScheme === "light" ? '#e5e5ea' : "#2c2c2e",
+    backgroundColor: "#DDD",
     borderRadius: 32,
   }
 })

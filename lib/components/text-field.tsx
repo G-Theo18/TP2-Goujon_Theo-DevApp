@@ -1,7 +1,6 @@
 import { FC, useMemo } from "react";
-import { ColorSchemeName, StyleSheet, TextInput, useColorScheme, View } from "react-native";
-import { useAdaptiveColors } from "../../../hooks/use-adaptive-colors";
-import { DarkColors, LightColors } from "../../../colors";
+import { StyleSheet, TextInput, View } from "react-native";
+import { useAdaptiveColors } from "../hooks/use-adaptive-colors";
 import { FieldErrors } from "./field-errors";
 
 export type InputProps = {
@@ -17,8 +16,8 @@ export type InputProps = {
 
   /**
    * Callback appelé lors du changement de la valeur du champ
-   * @param value 
-   * @returns 
+   * @param value
+   * @returns
    */
   onChangeText: (value: string) => void,
 
@@ -31,14 +30,23 @@ export type InputProps = {
    * Le placeholder du champ
    */
   placeholder?: string,
+
+  /**
+   * La couleur d'arrière-plan du champ
+   */
+  backgroundColor?: string,
+
+  /**
+   * La couleur du texte du champ
+   */
+  color?: string,
 }
 
 /**
  * Un champ basique sur une ligne
  */
-export const TextField: FC<InputProps> = function({disabled, value, onChangeText, errors, placeholder}) {
-  const colorScheme = useColorScheme();
-  const styles = useMemo(() => buildInputStyles(colorScheme), [colorScheme]);
+export const TextField: FC<InputProps> = function({disabled, value, onChangeText, errors, placeholder, backgroundColor, color}) {
+  const styles = useMemo(() => buildInputStyles(backgroundColor, color), [backgroundColor, color]);
   const colors = useAdaptiveColors();
 
   return <View style={styles.inputContainer}>
@@ -54,24 +62,21 @@ export const TextField: FC<InputProps> = function({disabled, value, onChangeText
   </View>
 }
 
-export function buildInputStyles(colorScheme: ColorSchemeName) {
-  const colors = colorScheme === 'dark' ? DarkColors : LightColors;
+export function buildInputStyles(backgroundColor: string = "#DDD", color: string = "#000") {
   return StyleSheet.create({
     inputField: {
       paddingVertical: 8,
       paddingHorizontal: 14,
       fontSize: 16,
       borderRadius: 8,
-      backgroundColor: colors.inputBackground,
-      color: colors.text
+      backgroundColor,
+      color,
     },
     inputContainer: {
-      marginVertical: 8
     },
     inputLabel: {
       fontSize: 14,
       fontWeight: 400,
-      color: colors.text,
     },
   })
 }
