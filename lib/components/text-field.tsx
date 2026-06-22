@@ -1,7 +1,7 @@
-import { ColorSchemeName, StyleSheet, TextInput, useColorScheme, View } from "react-native"
-import { DarkColors, LightColors } from "../colors";
 import { FC, useMemo } from "react";
-import { useAdaptiveColors } from "../hooks/use-adaptive-colors";
+import { ColorSchemeName, StyleSheet, TextInput, useColorScheme, View } from "react-native";
+import { useAdaptiveColors } from "../../../hooks/use-adaptive-colors";
+import { DarkColors, LightColors } from "../../../colors";
 import { FieldErrors } from "./field-errors";
 
 export type InputProps = {
