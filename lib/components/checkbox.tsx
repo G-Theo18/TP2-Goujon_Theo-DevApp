@@ -1,8 +1,14 @@
-import { useEffect, type FC } from "react";
-import { StyleSheet, Pressable } from "react-native";
-import Animated, { withSpring, useSharedValue, withTiming, Easing, useAnimatedStyle, interpolateColor } from "react-native-reanimated";
-import { useAdaptiveColors } from "@/lib/hooks/use-adaptive-colors";
 import { Feather } from "@expo/vector-icons";
+import { useEffect, type FC } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming
+} from "react-native-reanimated";
 
 type Props = {
   /**
@@ -12,14 +18,12 @@ type Props = {
 
   /**
    * Callback appelé lorsque la case est cochée ou décochée
-   * @param checked Indique l'état de la case à cocher
-   * @returns 
    */
   onValueChange?: (checked: boolean) => void,
 
   /**
    * Définit la taille de la checkbox. 
-   * @default 14
+   * @default 20
    */
   size?: number,
 
@@ -33,9 +37,12 @@ type Props = {
 /**
  * Case à cocher
  */
-export const Checkbox: FC<Props> = function ({ checked, onValueChange, size = 14, disabled = false }) {
-  const colors = useAdaptiveColors();
-
+export const Checkbox: FC<Props> = function ({
+  checked,
+  onValueChange,
+  size = 20,
+  disabled = false
+}) {
   // Valeurs de base des animations
   const checkedStatus = useSharedValue<boolean>(checked);
   const bgColor = useSharedValue(checked ? 1 : 0);
@@ -43,70 +50,80 @@ export const Checkbox: FC<Props> = function ({ checked, onValueChange, size = 14
   // Déclenche l'animation du fond de la case à cocher lorsque "checked" change de valeur
   useEffect(() => {
     checkedStatus.value = checked;
-    bgColor.value = withTiming(checked ? 1 : 0, { duration: 200, easing: Easing.inOut(Easing.quad) });
+    bgColor.value = withTiming(checked ? 1 : 0, {
+      duration: 180,
+      easing: Easing.inOut(Easing.quad)
+    });
   }, [checked]);
 
   // Styles animés de l'icône de la case à cocher
   const iconAnimatedStyles = useAnimatedStyle(() => ({
     transform: [
       {
-        scale: withSpring(checkedStatus.value ? 1 : 0.5, {
+        scale: withSpring(checkedStatus.value ? 1 : 0.4, {
           stiffness: 300
         })
       }
     ],
     opacity: withTiming(checkedStatus.value ? 1 : 0, {
-      easing: Easing.inOut(Easing.quad),
-      duration: 200
-    }),
+      duration: 150
+    })
   }));
 
   // Styles animés du fond de la case à cocher
-  const backgroundAnimatedStyles = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        bgColor.value,
-        [0, 1],
-        ['transparent', colors.checkboxFill]
-      ),
-      borderColor: interpolateColor(
-        bgColor.value,
-        [0, 1],
-        [colors.checkboxBorder, colors.checkboxFill]
-      )
-    }
-  }, [colors]);
+  const backgroundAnimatedStyles = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      bgColor.value,
+      [0, 1],
+      ["#F0F0F0", "#0AF"]
+    ),
+    borderColor: interpolateColor(
+      bgColor.value,
+      [0, 1],
+      ["#888", "#0AF"]
+    )
+  }));
 
   const handlePress = () => {
-    onValueChange?.(!checked);
-  }
+    if (!disabled) onValueChange?.(!checked);
+  };
 
-  return <Pressable
-    accessibilityRole="checkbox"
-    disabled={disabled}
-    accessibilityState={{ checked }}
-    onPress={handlePress}
-    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-  >
-    <Animated.View style={[
-      styles.checkbox,
-      { borderRadius: size * 0.5 },
-      backgroundAnimatedStyles
-    ]}>
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      disabled={disabled}
+      accessibilityState={{ checked }}
+      onPress={handlePress}
+      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+    >
       <Animated.View
-        style={iconAnimatedStyles}
+        style={[
+          styles.checkbox,
+          {
+            width: size,
+            height: size,
+            borderRadius: size * 0.25,
+            borderWidth: size * 0.12
+          },
+          backgroundAnimatedStyles
+        ]}
       >
-        <Feather name="check" color={colors.checkboxCheckIcon} size={size + 4} weight="bold" />
+        <Animated.View style={iconAnimatedStyles}>
+          <Feather
+            name="check"
+            color="#FFF"
+            size={size * 0.65}
+            strokeWidth={3}
+          />
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
-  </Pressable>;
+    </Pressable>
+  );
 };
 
 const styles = StyleSheet.create({
   checkbox: {
-    borderStyle: "solid",
-    borderWidth: 2,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   }
 });

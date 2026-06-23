@@ -1,7 +1,8 @@
 import type { TaskItemData } from "@/lib/types";
-import { useCallback, useEffect, type FC } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, type FC } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { Checkbox } from "./checkbox";
 import { TodoTitle } from "./task-title";
 
@@ -19,7 +20,7 @@ type Props = {
    * Callback appelé lorsque la tâche change de statut.
    * L'argment `completed` reflète l'état de la case à cocher.
    */
-  onChange?: (completed: boolean) => Promise<void> | void;
+  onChange?: (completed: boolean) => void;
   /**
    * Utilisé pour bloquer les actions du composant lors d'un chargement par exemple 
    */
@@ -29,93 +30,95 @@ type Props = {
 /**
  * Affichage d'une tâche sur la page d'accueil
  */
-export const TaskItem: FC<Props> = function ({task, onLongPress, onChange, disabled = false}) {
+export const TaskItem: FC<Props> = ({ task, onChange, disabled = false }) => {
+  const router = useRouter();
   const completed = task.completed;
 
   // Gère l'animation de pression longue lorsque l'on reste appuyé sur la tâche et que cela ouvre l'écran d'édition
-  const pressed = useSharedValue<boolean>(false);
+  const pressed = useSharedValue(false);
   const animatedStyles = useAnimatedStyle(() => ({
-    opacity: withTiming(pressed.value ? 0.6 : 1, {
-      easing: Easing.inOut(Easing.quad)
-    }),
-    transform: [
-      {
-        scale: withTiming(pressed.value ? 0.95 : 1, {
-          duration: 500,
-          easing: Easing.inOut(Easing.quad)
-        }),
-      }
-    ]
+    opacity: withTiming(pressed.value ? 0.6 : 1),
+    transform: [{ scale: withTiming(pressed.value ? 0.95 : 1) }],
   }));
 
-  const handlePress = () => {
-    onChange?.(!completed);
-  };
-
-  // Lors d'une pression longue, ouvre l'écran d'édition de la tâche
-  const handleLongPress = useCallback(() => {
-    pressed.set(false);
-    onLongPress?.();
-  }, [])
-
-  // Modifie l'opacité de la tâche lorsque celle-ci est complétée
-  const opacity = useSharedValue(task.completed ? 0.5 : 1);
+  const opacity = useSharedValue(completed ? 0.5 : 1);
   useEffect(() => {
-    opacity.value = withTiming(completed ? 0.5 : 1, {
-      duration: 200,
-      easing: Easing.inOut(Easing.bounce)
-    })
+    opacity.value = withTiming(completed ? 0.5 : 1);
   }, [completed]);
 
+  return (
+    <Pressable
+      onPress={() => onChange?.(!completed)}
+      onLongPress={() =>
+        router.push({
+          pathname: "/modals/editTask",
+          params: { id: task.id },
+        })
+      }
+      onPressIn={() => pressed.set(true)}
+      onPressOut={() => pressed.set(false)}
+      disabled={disabled}
+    >
+      <Animated.View style={[styles.card, animatedStyles]}>
+        <Animated.View style={{ opacity }}>
+          {/* Task Header */}
+          <View style={styles.header}>
+            {/* Case à cocher */}
+            <Checkbox
+              size={18}
+              checked={completed}
+              disabled={disabled}
+              onValueChange={(v) => onChange?.(v)}
+            />
+            {/* Titre */}
+            <TodoTitle title={task.title} completed={completed} />
+          </View>
 
-  return <Pressable
-    onPress={handlePress}
-    onPressIn={() => pressed.set(true)}
-    onPressOut={() => pressed.set(false)}
-    disabled={disabled}
-    onLongPress={handleLongPress}
-  >
-    <Animated.View style={animatedStyles}>
-      <Animated.View style={{ opacity }}>
-
-        {/* Task Header */}
-        <View style={styles.header}>
-          {/* Case à cocher */}
-          <Checkbox size={10}
-            checked={completed}
-            disabled={disabled}
-            onValueChange={handlePress}
-          />
-
-          {/* Titre */}
-          <TodoTitle
-            title={task.title}
-            completed={completed}
-          />
-        </View>
-
-        {/* Task Description */}
-        {task.description && <View style={styles.descriptionContainer}>
-          <Text style={styles.description}>{task.description}</Text>
-        </View>
-        }
+          {/* Task Description */}
+          {task.description && (
+            <View style={styles.descriptionContainer}>
+              <Text
+                style={[
+                  styles.description,
+                  completed && styles.descriptionCompleted,
+                ]}
+              >
+                {task.description}
+              </Text>
+            </View>
+          )}
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
-  </Pressable>;
-}
+    </Pressable>
+  );
+};
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  description: {
-    color: "#888",
-    fontWeight: "600"
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   descriptionContainer: {
     marginTop: 8,
-    marginLeft: 28
-  }
+    marginLeft: 32,
+  },
+  description: {
+    color: "#666",
+    fontSize: 14,
+  },
+  descriptionCompleted: {
+    color: "#888",
+    fontStyle: "italic",
+  },
 });

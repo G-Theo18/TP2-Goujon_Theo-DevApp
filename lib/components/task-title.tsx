@@ -1,4 +1,4 @@
-import { LightColors, DarkColors } from "@/lib/colors";
+import { DarkColors, LightColors } from "@/lib/colors";
 import { useEffect, useMemo, type FC } from "react";
 import { ColorSchemeName, StyleSheet, Text, useColorScheme, View } from "react-native";
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
@@ -33,30 +33,37 @@ export const TodoTitle: FC<Props> = function ({ title, completed }) {
     })
   }, [completed]);
 
-  return <View style={styles.container}>
-    {completed && <Animated.View style={[
-      styles.lineThrough,
-      {
-        transform: [
-          { scaleX: lineScale }
-        ]
-      }
-    ]} />}
+  return (
+    <View style={styles.container}>
+      {completed && (
+        <Animated.View
+          style={[
+            styles.lineThrough,
+            {
+              transform: [{ scaleX: lineScale }]
+            }
+          ]}
+        />
+      )}
 
-    <Text style={[
-      styles.title,
-    ]}>
-      {title}
-    </Text>
-  </View>
-    ;
+      <Text
+        style={[
+          styles.title,
+          completed && styles.titleCompleted
+        ]}
+        numberOfLines={1}
+      >
+        {title}
+      </Text>
+    </View>
+  );
 };
 
 const makeStyles = (colorScheme: ColorSchemeName) => {
-  const colors = colorScheme === "dark" 
+  const colors = colorScheme === "dark"
     ? DarkColors
     : LightColors;
-  
+
   return StyleSheet.create({
     container: {
       position: "relative"
@@ -75,7 +82,11 @@ const makeStyles = (colorScheme: ColorSchemeName) => {
     title: {
       fontSize: 18,
       fontWeight: "800",
-      color: colors.text
+      color: "#0AF"
     },
+    titleCompleted: {
+      color: colors.secondaryText,
+      textDecorationLine: "line-through"
+    }
   });
-}
+};

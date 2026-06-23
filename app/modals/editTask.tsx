@@ -1,16 +1,30 @@
 import { AppButton } from "@/lib/components/app-button";
 import { MultilineTextField } from "@/lib/components/multiline-text-field";
 import { TextField } from "@/lib/components/text-field";
-import { addTask } from "@/lib/database";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { getTaskById, updateTask } from "@/lib/database";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
-export default function AddTaskModal() {
+export default function EditTaskModal() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ id?: string }>();
+
+  const id = Number(params.id);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  // Charge la tâche à modifier
+  useEffect(() => {
+    if (!id) return;
+
+    const task = getTaskById(id);
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description ?? "");
+    }
+  }, [id]);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -18,13 +32,14 @@ export default function AddTaskModal() {
       return;
     }
 
-    addTask(title, description);
-    Alert.alert("Succès", "La tâche a été ajoutée.");
+    updateTask(id, title, description);
+    Alert.alert("Succès", "La tâche a été mise à jour.");
     router.back();
   };
 
   return (
     <View style={styles.container}>
+
       <TextField
         placeholder="Nom de la tâche..."
         value={title}
@@ -59,3 +74,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
